@@ -1,0 +1,102 @@
+-- GestionFinances - Schéma MySQL
+-- Encodage UTF-8, devise XOF (FCFA)
+
+CREATE DATABASE IF NOT EXISTS gestion_finances
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE gestion_finances;
+
+CREATE TABLE IF NOT EXISTS utilisateurs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  mot_de_passe VARCHAR(255) NOT NULL,
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS categories_revenus (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  nom VARCHAR(120) NOT NULL,
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_cat_rev (utilisateur_id, nom),
+  CONSTRAINT fk_cat_rev_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS categories_depenses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  nom VARCHAR(120) NOT NULL,
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_cat_dep (utilisateur_id, nom),
+  CONSTRAINT fk_cat_dep_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS revenus (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  categorie_id INT UNSIGNED NULL,
+  montant DECIMAL(14,2) NOT NULL,
+  date_operation DATE NOT NULL,
+  description VARCHAR(255) NOT NULL DEFAULT '',
+  moyen_paiement ENUM('especes','mobile_money','carte','virement','cheque','autre')
+    NOT NULL DEFAULT 'especes',
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_rev_user_date (utilisateur_id, date_operation),
+  CONSTRAINT fk_rev_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rev_cat FOREIGN KEY (categorie_id)
+    REFERENCES categories_revenus(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS depenses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  categorie_id INT UNSIGNED NULL,
+  montant DECIMAL(14,2) NOT NULL,
+  date_operation DATE NOT NULL,
+  description VARCHAR(255) NOT NULL DEFAULT '',
+  moyen_paiement ENUM('especes','mobile_money','carte','virement','cheque','autre')
+    NOT NULL DEFAULT 'especes',
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_dep_user_date (utilisateur_id, date_operation),
+  CONSTRAINT fk_dep_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE,
+  CONSTRAINT fk_dep_cat FOREIGN KEY (categorie_id)
+    REFERENCES categories_depenses(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS budgets (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  mois TINYINT UNSIGNED NOT NULL,
+  annee SMALLINT UNSIGNED NOT NULL,
+  montant DECIMAL(14,2) NOT NULL,
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_budget (utilisateur_id, mois, annee),
+  CONSTRAINT fk_budget_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS budgets_categories (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  utilisateur_id INT UNSIGNED NOT NULL,
+  categorie_id INT UNSIGNED NOT NULL,
+  mois TINYINT UNSIGNED NOT NULL,
+  annee SMALLINT UNSIGNED NOT NULL,
+  montant DECIMAL(14,2) NOT NULL,
+  cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maj_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_budget_cat (utilisateur_id, categorie_id, mois, annee),
+  CONSTRAINT fk_bcat_user FOREIGN KEY (utilisateur_id)
+    REFERENCES utilisateurs(id) ON DELETE CASCADE,
+  CONSTRAINT fk_bcat_cat FOREIGN KEY (categorie_id)
+    REFERENCES categories_depenses(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

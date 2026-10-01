@@ -1,0 +1,17 @@
+# Configuration locale et secrets
+backend/.env
+frontend/.env
+
+# Sauvegardes de base de donnees
+backend/backups/*.sql
+
+# Dependances et builds frontend
+frontend/node_modules/
+frontend/dist/
+
+# Fichiers locaux et logs
+*.log
+*.local
+.vscode/
+.idea/
+.DS_Store
