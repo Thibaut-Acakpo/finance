@@ -78,3 +78,7 @@ foreach ($oldBackup in $oldBackups) {
     Remove-Item $oldBackup.FullName -Force
     Write-Output "Ancienne sauvegarde supprimee : $($oldBackup.Name)"
 }
+
+if (-not $oldBackups) {
+    Write-Output "Aucune ancienne sauvegarde a supprimer. Rétention active : $RetentionMonths mois."
+}

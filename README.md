@@ -29,16 +29,20 @@ Pour creer un dump horodate de la base et de ses donnees :
 ```
 
 Les fichiers sont conserves dans `backend/backups/` sous la forme
-`finance-AAAA-MM-JJTHH-mm-ss.sql`. Les fichiers de plus de trois mois sont
-supprimes automatiquement lors de la creation d'une nouvelle sauvegarde.
+`finance-AAAA-MM-JJTHH-mm-ss.sql`.
 
-Pour installer une sauvegarde automatique quotidienne a 02:00 :
+- Une sauvegarde est creee toutes les 24 heures.
+- Les fichiers sont conserves pendant 3 mois.
+- Les sauvegardes de plus de 3 mois sont supprimees automatiquement lors de la
+  prochaine sauvegarde.
+
+Pour installer une sauvegarde automatique tous les 24 heures a partir de 02:00 :
 
 ```powershell
 .\backend\scripts\install-backup-task.ps1
 ```
 
-Pour choisir une autre heure, par exemple 23:30 :
+Pour choisir une autre heure de depart, par exemple 23:30 :
 
 ```powershell
 .\backend\scripts\install-backup-task.ps1 -Time 23:30
