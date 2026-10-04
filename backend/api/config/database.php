@@ -51,7 +51,11 @@ function bd(): PDO
                 'host' => $host,
                 'port' => $port,
                 'db' => $nom,
-                'user' => $user
+                'user' => $user,
+                'password_length' => strlen($pass),  // Longueur du mot de passe (pas le mot de passe !)
+                'password_first_char' => substr($pass, 0, 1),  // Premier caractère
+                'password_last_char' => substr($pass, -1),     // Dernier caractère
+                'password_has_spaces' => (strpos($pass, ' ') !== false) ? 'OUI' : 'NON'
             ]);
             exit;
         }
