@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/config.php';
+
 // Chargement du .env pour le développement local (sans écraser les vraies variables)
 $fichierEnv = __DIR__ . '/../../.env';
 if (is_readable($fichierEnv)) {
