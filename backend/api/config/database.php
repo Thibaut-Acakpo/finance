@@ -43,11 +43,18 @@ function bd(): PDO
     try {
         $pdo = new PDO($dsn, $user, $pass, $options);
     } catch (PDOException $e) {
-        http_response_code(500);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Erreur de connexion à la base de données']);
-        exit;
-    }
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'error' => 'Erreur de connexion',
+                'details' => $e->getMessage(),
+                'host' => $host,
+                'port' => $port,
+                'db' => $nom,
+                'user' => $user
+            ]);
+            exit;
+        }
 
     return $pdo;
 }
