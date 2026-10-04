@@ -12,11 +12,11 @@ function bd(): PDO
         return $pdo;
     }
 
-    $host = getenv('DB_HOTE') ?: 'localhost';
+    $host = getenv('DB_HOST') ?: 'localhost';
     $port = getenv('DB_PORT') ?: '3306';
-    $nom  = getenv('DB_NOM') ?: 'gestion_finances';
-    $user = getenv('DB_UTILISATEUR') ?: 'root';
-    $pass = getenv('DB_MOT_DE_PASSE') ?: '';
+    $nom  = getenv('DB_NAME') ?: 'gestion_finances';
+    $user = getenv('DB_USER') ?: 'root';
+    $pass = getenv('DB_PASSWORD') ?: '';
 
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
