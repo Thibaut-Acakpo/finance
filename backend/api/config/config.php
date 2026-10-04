@@ -47,6 +47,9 @@ function getPDO(): PDO
 
     // Activation du SSL si le certificat est présent (obligatoire pour TiDB Cloud)
     $caPath = '/var/www/html/ca.pem';
+    if (!file_exists($caPath)) {
+        $caPath = __DIR__ . '/../ca.pem'; // développement local
+    }
     if (file_exists($caPath)) {
         $options[PDO::MYSQL_ATTR_SSL_CA] = $caPath;
         $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;

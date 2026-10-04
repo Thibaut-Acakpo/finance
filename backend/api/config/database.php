@@ -1,10 +1,23 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Retourne une connexion PDO unique (singleton) à la base de données.
- * Gère automatiquement le SSL si le certificat ca.pem est présent (TiDB Cloud).
- */
+// Chargement du .env pour le développement local (sans écraser les vraies variables)
+$fichierEnv = __DIR__ . '/../../.env';
+if (is_readable($fichierEnv)) {
+    foreach (file($fichierEnv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $ligne) {
+        $ligne = trim($ligne);
+        if ($ligne === '' || $ligne[0] === '#' || !str_contains($ligne, '=')) {
+            continue;
+        }
+        [$cle, $valeur] = explode('=', $ligne, 2);
+        $cle = trim($cle);
+        $valeur = trim(trim($valeur), "\"'");
+        if (getenv($cle) === false) {
+            putenv($cle . '=' . $valeur);
+        }
+    }
+}
+
 function bd(): PDO
 {
     static $pdo = null;
@@ -24,11 +37,10 @@ function bd(): PDO
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
 
-    // Chercher le certificat ca.pem dans plusieurs emplacements possibles
     $caPathCandidates = [
-        '/var/www/html/ca.pem',                  // Dans le conteneur Docker sur Render
-        __DIR__ . '/../ca.pem',                  // En local (backend/api/ca.pem)
-        __DIR__ . '/../../ca.pem',               // Autre emplacement possible
+        '/var/www/html/ca.pem',   // Docker / Render
+        __DIR__ . '/../ca.pem',   // Local (backend/api/ca.pem)
+        __DIR__ . '/../../ca.pem',
     ];
     foreach ($caPathCandidates as $caPath) {
         if (file_exists($caPath)) {
@@ -43,22 +55,12 @@ function bd(): PDO
     try {
         $pdo = new PDO($dsn, $user, $pass, $options);
     } catch (PDOException $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'error' => 'Erreur de connexion',
-                'details' => $e->getMessage(),
-                'host' => $host,
-                'port' => $port,
-                'db' => $nom,
-                'user' => $user,
-                'password_length' => strlen($pass),  // Longueur du mot de passe (pas le mot de passe !)
-                'password_first_char' => substr($pass, 0, 1),  // Premier caractère
-                'password_last_char' => substr($pass, -1),     // Dernier caractère
-                'password_has_spaces' => (strpos($pass, ' ') !== false) ? 'OUI' : 'NON'
-            ]);
-            exit;
-        }
+        error_log('Erreur PDO : ' . $e->getMessage());
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Erreur de connexion à la base de données']);
+        exit;
+    }
 
     return $pdo;
 }
